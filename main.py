@@ -6,7 +6,6 @@ from pyspark.ml.regression import GeneralizedLinearRegression
 
 import config
 
-
 DATA_CSV = config.BUILDDIR / 'bd_lab_small_sample.csv'
 DATA_PARQUET = DATA_CSV.with_suffix('.parquet')
 
@@ -21,15 +20,17 @@ def explore():
     #type(datafile)
     #datafile.first()
 
-    df = sql.read.csv(str(DATA_CSV), header=True, inferSchema='true')
+    # df = sql.read.csv(str(DATA_CSV), header=True, inferSchema='true')
+    df = sql.read.parquet(str(DATA_PARQUET))
     #breakpoint()
     #df.show()
     #df.printSchema()
 
-    df.write.parquet(str(DATA_PARQUET))
+    # df.write.parquet(str(DATA_PARQUET))
     #breakpoint()
     #df.groupby('event').count().show()
     #for c in df.columns: print(c); df.groupby(c).count().show()
+    breakpoint()
 
 
 def model():

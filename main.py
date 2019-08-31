@@ -6,6 +6,7 @@ from pyspark.ml.regression import GeneralizedLinearRegression
 
 import config
 
+
 DATA_CSV = config.BUILDDIR / 'bd_lab_small_sample.csv'
 DATA_PARQUET = DATA_CSV.with_suffix('.parquet')
 
@@ -20,17 +21,52 @@ def explore():
     #type(datafile)
     #datafile.first()
 
-    # df = sql.read.csv(str(DATA_CSV), header=True, inferSchema='true')
-    df = sql.read.parquet(str(DATA_PARQUET))
+    #df = sql.read.csv(str(DATA_CSV), header=True, inferSchema='true')
     #breakpoint()
     #df.show()
     #df.printSchema()
 
-    # df.write.parquet(str(DATA_PARQUET))
+    #df.write.parquet(str(DATA_PARQUET))
     #breakpoint()
     #df.groupby('event').count().show()
     #for c in df.columns: print(c); df.groupby(c).count().show()
-    breakpoint()
+
+    df = sql.read.parquet(str(DATA_PARQUET))
+    # breakpoint()
+
+    df.agg({'target': 'max'}).collect()
+
+    from pyspark.sql.types import FloatType
+    df = df.withColumn('cost', df['cost'].cast(FloatType()))
+
+    df.select(df.columns[:10]).show()
+
+    from math import ceil
+    for i in range(ceil(len(df.columns) / 5)):
+        df.select(df.columns[i*5:(i+1)*5]).show()
+
+    df.groupby(df['phone_price_category']).count().toPandas().to_csv('build/test.csv')
+
+    df.groupby(df['phone_price_category']).count().coalesce(1).write.csv('build/test2.csv', header=True)
+
+    df = df.withColumn('phone_price_category', df['phone_price_category'].cast(FloatType()))
+    df.corr('cost', 'phone_price_category')
+
+    df.groupBy('hash_number_A')\
+        .agg({'cost': 'sum', 'phone_price_category': 'max'})\
+        .dropna().corr('sum(cost)', 'max(phone_price_category)')
+
+    df.groupBy('hash_number_A')\
+        .agg({'cost': 'sum', 'phone_price_category': 'max'})\
+        .dropna()\
+        .explain()
+
+    df.crosstab('device_type', 'phone_price_category')
+
+    df.fillna(0, ['phone_price_category']).crosstab('device_type', 'phone_price_category').show()
+
+    df.cube('device_type', 'phone_price_category').sum().show()
+    df.cube('device_type', 'phone_price_category').sum('cost', 'target').show()
 
 
 def model():
@@ -50,7 +86,7 @@ def model():
             ,sum(cost) as label
         from data
         group by {", ".join(str(n) for n in range(1, 8+1))}''')
-    breakpoint()
+    # breakpoint()
 
     pipeline = Pipeline(stages=[
         StringIndexer(inputCol='interest_1', outputCol='interest'),
@@ -65,4 +101,4 @@ def model():
 
     regression = GeneralizedLinearRegression(family='gaussian', labelCol='label', featuresCol='features', maxIter=10, regParam=0.3)
     model = regression.fit(sample)
-    breakpoint()
+    # breakpoint()

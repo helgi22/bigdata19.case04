@@ -114,3 +114,5 @@ models/
 /.idea/.gitignore
 /build/bd_lab_small_sample.parquet
 /build/
+derby.log
+metastore_db/

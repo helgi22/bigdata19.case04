@@ -32,7 +32,7 @@ def explore():
 
     df = sql.read.parquet(str(DATA_PARQUET))
     df.printSchema()
-    breakpoint()
+    # breakpoint()
 
     df.agg({'target': 'max'}).collect()
 
@@ -47,10 +47,11 @@ def explore():
 
     df.groupby(df['phone_price_category']).count().toPandas().to_csv('build/test.csv')
 
-    df.groupby(df['phone_price_category']).count().coalesce(1).write.csv('build/test2.csv', header=True)
+    df.groupby(df['phone_price_category']).count().coalesce(1).write.csv('build/test3.csv', header=True)
 
     df = df.withColumn('phone_price_category', df['phone_price_category'].cast(FloatType()))
     df.corr('cost', 'phone_price_category')
+    breakpoint()
 
     df.groupBy('hash_number_A')\
         .agg({'cost': 'sum', 'phone_price_category': 'max'})\

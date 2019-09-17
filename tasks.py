@@ -10,7 +10,7 @@ import config as cfg
 
 
 PTY = (os.name != 'nt')
-DOCKER_RUN = f'docker run {"-it" if PTY else ""} --rm'
+# DOCKER_RUN = f'docker run {"-it" if PTY else ""} --rm'
 
 cfg.BUILDDIR.mkdir(parents=True, exist_ok=True)
 
